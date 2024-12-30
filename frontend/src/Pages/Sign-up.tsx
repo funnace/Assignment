@@ -25,9 +25,11 @@ const Signup = () => {
     };
 
     useEffect(() => {
-        if(localStorage.getItem("token") || !checkTokenExpiry()) {
+        if(localStorage.getItem("token")) {
+            if(!checkTokenExpiry()){
             navigate("/dashboard");
           }
+        }
     })
     
 
