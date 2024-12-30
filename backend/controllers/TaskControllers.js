@@ -49,21 +49,32 @@ const Task = require('../models/TaskSchema')
     }
   }
   
- const deleteTask = async (req, res) => {
-    const { id } = req.params;
+  const deleteTasks = async (req, res) => {
+    const { ids } = req.body;  // Retrieve the array of task IDs from the request body
+  
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: 'No task IDs provided' });
+    }
   
     try {
-      const task = await Task.findOneAndDelete({ _id: id, userId: req.user.userId });
-      if (!task) return res.status(404).json({ message: 'Task not found' });
-      res.json({ message: 'Task deleted successfully' });
+      const deletedTasks = await Task.deleteMany({
+        _id: { $in: ids },
+        userId: req.user.userId,  // Ensure that the user is authorized
+      });
+  
+      if (deletedTasks.deletedCount === 0) {
+        return res.status(404).json({ message: 'No tasks found for deletion' });
+      }
+  
+      res.json({ message: 'Tasks deleted successfully' });
     } catch (err) {
-      res.status(400).json({ message: 'Error deleting task', error: err.message });
+      res.status(400).json({ message: 'Error deleting tasks', error: err.message });
     }
-  }
+  };  
 
   module.exports = {
     getTasks,
     postTask,
     editTasks,
-    deleteTask
+    deleteTasks
 };
